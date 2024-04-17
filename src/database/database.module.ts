@@ -1,18 +1,25 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import * as process from 'node:process';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'floppy.db.elephantsql.com',
-      port: 5432,
-      username: 'ahcpkthv',
-      password: 'iikosKhRiHD73xOAdaCaINGj-SozMZxJ',
-      database: 'ahcpkthv',
-      entities: [],
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('POSTGRES_HOST'),
+        port: configService.get('POSTGRES_PORT'),
+        username: configService.get('POSTGRES_USER'),
+        password: configService.get('POSTGRES_PASSWORD'),
+        database: configService.get('POSTGRES_DB'),
+        // root의 모든 하위 디렉토리의 하위 디렉토리에 있는 모든 .entity.js 나 .entity.ts를 불러옴
+        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+        autoLoadEntities: true,
+        synchronize: true,
+      }),
     }),
   ],
 })
